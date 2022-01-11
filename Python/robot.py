@@ -29,7 +29,7 @@ def Get_Time() -> str:
 
 #读取TOKEN;
 def Read_Token() -> str:
-    with open('token', 'r') as f:
+    with open('/etc/token', 'r') as f:
         TOKEN = (f.read().strip('\n'))
         return TOKEN
 
