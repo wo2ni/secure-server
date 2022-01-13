@@ -50,7 +50,6 @@ def start(update: Update, context: CallbackContext) -> None:
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    #update.message.reply_text('Hello Sir,好久不见,你依旧那般年轻,英俊且潇洒.')
     update.message.reply_text('请选择:', reply_markup=reply_markup)
 
 #读取ssh服务配置文件,匹配端口号,通过Systemd获取ssh启动状态;
@@ -87,7 +86,7 @@ def button(update: Update, context: CallbackContext) -> None:
                 Get_Time()+"\n-----SSH服务当前状态-----:\n"+
                 Get_Time()+'    '+ssh_status
                 )
-        context.bot.send_message(chat_id=update.effective_chat.id, text="主人!!夜已深,为了你的颜值,要注意休息哦")
+        context.bot.send_message(chat_id=update.effective_chat.id, text="ssh status")
         #query.edit_message_text(ssh_msg)
     elif query.data == '2':
         print("use 查看服务器负载情况")
