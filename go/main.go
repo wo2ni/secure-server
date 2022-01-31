@@ -6,12 +6,14 @@ import (
     "strings"
     "os"
     "io/ioutil"
+    "time"
     //"os/exec"
+    "./utils/systemd"
     tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 //读取TOKEN到file中,再利用ioutil将file直接读取到[]byte中,这是性能最好最快的方法;
-func Read_Token()  (string){
+func Read_Token()  (string) {
     f, err := os.Open("/etc/token")
     if err != nil {
         fmt.Println("read file fail", err)
@@ -28,10 +30,18 @@ func Read_Token()  (string){
     return string(fd)
 }
 
+//Get当前系统时间;
+func Get_Time_Now()(string) {
+    /*当前时间的字符串,2006-01-02 15:04:05 golang的诞生时间,固定写法;*/
+    timeStr := time.Now().Format("2006-01-02 15:04:05")
+    return timeStr
+}
+
 //定义内连键盘菜单;update.CallbackQuery.Data ,返回参数;
 var numericKeyboard = tgbotapi.NewInlineKeyboardMarkup(
     tgbotapi.NewInlineKeyboardRow(
         //tgbotapi.NewInlineKeyboardButtonSwitch(test,Switch),
+        //tgbotapi.NewInlineKeyboardButtonData("0:开启/关闭SSH服务","0"),
         tgbotapi.NewInlineKeyboardButtonData("0:开启/关闭SSH服务","0"),
     ),
     tgbotapi.NewInlineKeyboardRow(
@@ -57,7 +67,8 @@ var numericKeyboard = tgbotapi.NewInlineKeyboardMarkup(
     ),
 )
 
-func ssh() {
+//检测ssh状态;
+func Kiss_Ssh() {
     fmt.Println("执行SSH检测SSH服务状态;")
     //ssh_status := '执行SSH检测程序'
     //return ssh_status
@@ -70,8 +81,7 @@ func main() {
         log.Panic(err)
     }
 
-    bot.Debug = true
-
+    //bot.Debug = true
     log.Printf("Authorized on account %s", bot.Self.UserName)
 
     u := tgbotapi.NewUpdate(0)
@@ -85,15 +95,16 @@ func main() {
         if update.Message != nil {
             //从给定的聊天 ID 构造一条新消息并包含;
             //我们收到的文本;
-            msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
 
+            /*当输入其他任何消息,机器执行复读机;*/
+            msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
+            //fmt.Println("执行复读机")
             //如果消息已打开，请添加我们的数字键盘的副本;
             switch update.Message.Text {
             //输入Open指令: "open":
             case "open":
                 msg.ReplyMarkup = numericKeyboard
             }
-
             //发送这消息;
             if _, err = bot.Send(msg); err != nil {
                 panic(err)
@@ -114,7 +125,36 @@ func main() {
             switch update.CallbackQuery.Data {
             case "0":
                 /*开启或关闭SSH服务;*/;
+                chatID := update.CallbackQuery.Message.Chat.ID
+
                 fmt.Println("/*开启或关闭SSH服务;*/")
+                fmt.Println(Get_Time_Now)
+                //ReplyMarkup.tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "开启或关闭SSH服务!")
+                //msg.ReplyMarkup = numericKeyboard
+                //msg.Text = "Hellow Sir"
+                /*
+                fmt.Println("你的chatID:",update.CallbackQuery.Message.Chat.ID)
+                //tgbotapi.NewCallback(update.CallbackQuery.ID, "text")
+
+                ssh_status := systemd.Get_Server_Status("sshd")   //Get ssh server status;
+                bot.Send(tgbotapi.NewMessage(chatID, "当前ssh服务状态:"+ssh_status))
+
+                ssh_conf := systemd.Get_Server_Conf("/etc/ssh/sshd_config")     //Get ssh server config;
+                bot.Send(tgbotapi.NewMessage(chatID, "当前ssh服务配置:\n"+ssh_conf))
+                */
+
+                //Get ssh服务信息;
+                ssh_status := systemd.Auto_Control_Server("wpa_supplicant.service")
+                //Telegram机器人发送ssh服务信息;
+                bot.Send(tgbotapi.NewMessage(chatID, Get_Time_Now()+"  "+ssh_status))
+
+                //Get 当前ssh服务配置文件;
+                ssh_conf := systemd.Get_Server_Conf("/etc/ssh/sshd_config")     //Get ssh server config;
+                //Telegram机器人发送当前ssh服务配置;
+                bot.Send(tgbotapi.NewMessage(chatID, "当前ssh服务配置:\n"+ssh_conf))
+
+                //bot.Send(tgbotapi.NewMessage(chatID,"/*开启或关闭SSH服务*/"))
+                //Kiss_Ssh()
             case "1":
                 /*查看服务器负载情况;*/
                 fmt.Println("/*查看服务器负载情况;*/")
@@ -137,10 +177,10 @@ func main() {
 
             //收到数据的消息,输出的数据消息(复读机);
             //msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "这是一个测试!!")
-            msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data)
+            /*msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data)
             if _, err := bot.Send(msg); err != nil {
                 panic(err)
-            }
+            }*/
         }
     }
 }
