@@ -129,22 +129,9 @@ func main() {
 
                 fmt.Println("/*开启或关闭SSH服务;*/")
                 fmt.Println(Get_Time_Now)
-                //ReplyMarkup.tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "开启或关闭SSH服务!")
-                //msg.ReplyMarkup = numericKeyboard
-                //msg.Text = "Hellow Sir"
-                /*
-                fmt.Println("你的chatID:",update.CallbackQuery.Message.Chat.ID)
-                //tgbotapi.NewCallback(update.CallbackQuery.ID, "text")
-
-                ssh_status := systemd.Get_Server_Status("sshd")   //Get ssh server status;
-                bot.Send(tgbotapi.NewMessage(chatID, "当前ssh服务状态:"+ssh_status))
-
-                ssh_conf := systemd.Get_Server_Conf("/etc/ssh/sshd_config")     //Get ssh server config;
-                bot.Send(tgbotapi.NewMessage(chatID, "当前ssh服务配置:\n"+ssh_conf))
-                */
 
                 //Get ssh服务信息;
-                ssh_status := systemd.Auto_Control_Server("wpa_supplicant.service")
+                ssh_status := systemd.Auto_Control_Server("sshd.service")
                 //Telegram机器人发送ssh服务信息;
                 bot.Send(tgbotapi.NewMessage(chatID, Get_Time_Now()+"  "+ssh_status))
 
